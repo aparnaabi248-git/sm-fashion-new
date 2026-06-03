@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us | SM Fashion</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-container" style="display: flex; justify-content: space-between; align-items: center;">
+      <a href="/" class="logo" style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+        <img src="/uploads/logo.png" alt="Logo" style="height: 40px; width: 40px; object-fit: contain; border-radius: 50%;">
+        <span>SM FASHION</span>
+      </a>
+      <ul class="nav-links" style="display: flex; align-items: center; gap: 1.5rem;">
+        <li><a href="/">HOME</a></li>
+        <li><a href="/products.html">SHOP</a></li>
+        <li><a href="/login.html">LOGIN</a></li>
+        <li><a href="/cart.html" class="cart-icon"><i class="fas fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container" style="padding: 3rem 0;">
+    <h1 style="margin-bottom: 1rem;">Contact Us</h1>
+    <p style="max-width: 750px;">We’re here to help! Please fill in this form and our customer support team will respond as soon as possible.</p>
+
+    <div class="contact-card" style="background: #fff; padding: 2rem; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-top: 2rem;">
+      <form id="contactForm">
+        <div class="form-group" style="margin-bottom: 1rem;"><label>Name</label><input type="text" id="name" class="form-control" required></div>
+        <div class="form-group" style="margin-bottom: 1rem;"><label>Email</label><input type="email" id="email" class="form-control" required></div>
+        <div class="form-group" style="margin-bottom: 1rem;"><label>Order ID (optional)</label><input type="text" id="orderId" class="form-control"></div>
+        <div class="form-group" style="margin-bottom: 1rem;"><label>Request Type</label>
+          <select id="type" class="form-control" onchange="document.getElementById('fileUploadGroup').style.display = this.value === 'Damaged Product' ? 'block' : 'none';">
+            <option value="Return">Return</option>
+            <option value="Exchange">Exchange</option>
+            <option value="Damaged Product">Damaged Product</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group" id="fileUploadGroup" style="display:none; margin-bottom: 1rem;">
+          <label>Choose File (Damaged Product)</label>
+          <input type="file" id="damageFile" class="form-control" accept="image/*">
+        </div>
+        <div class="form-group" style="margin-bottom: 1rem;"><label>Message</label><textarea id="message" class="form-control" rows="5"></textarea></div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+      <p id="contactSuccess" style="display:none; margin-top:1rem; color:green;">Thanks! Your request has been received.</p>
+      <p id="contactError" style="display:none; margin-top:1rem; color:red;"></p>
+    </div>
+
+    <div style="margin-top: 2rem;">
+      <h3>Visit us</h3>
+      <p>123 Fashion Street, City Center, Your State</p>
+      <p><strong>Phone:</strong> +91 12345 67890</p>
+      <p><strong>Email:</strong> support@smfashion.com</p>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    document.getElementById('contactForm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const orderId = document.getElementById('orderId').value.trim();
+      const type = document.getElementById('type').value;
+      const message = document.getElementById('message').value.trim();
+
+      document.getElementById('contactError').style.display = 'none';
+      document.getElementById('contactSuccess').style.display = 'none';
+
+      if (!name || !email) {
+        document.getElementById('contactError').innerText = 'Please fill out your name and email.';
+        document.getElementById('contactError').style.display = 'block';
+        return;
+      }
+
+      let waText = `*Support Request*\nName: ${name}\nEmail: ${email}\nOrder ID: ${orderId || 'N/A'}\nType: ${type}\nMessage: ${message}`;
+      if (type === 'Damaged Product') {
+        waText += `\n*Note*: User indicated a damaged product. Image to be sent separately.`;
+      }
+      
+      const encodedWaText = encodeURIComponent(waText);
+      window.open(`https://wa.me/911234567890?text=${encodedWaText}`, '_blank');
+      
+      document.getElementById('contactSuccess').style.display = 'block';
+      this.reset();
+    });
+  </script>
+
+  <footer class="footer" style="margin-top: 4rem;">
+    <div class="container">
+      <p style="text-align:center; padding:1.5rem 0;">&copy; 2026 SM Fashion Boutique. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>

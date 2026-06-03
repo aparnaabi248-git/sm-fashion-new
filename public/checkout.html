@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | SM Fashion</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .checkout-layout {
+      display: flex;
+      gap: 3rem;
+      margin-top: 3rem;
+    }
+    .checkout-form {
+      flex: 2;
+      background: var(--color-white);
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .order-summary {
+      flex: 1;
+      background: var(--color-cream-dark);
+      padding: 2rem;
+      height: fit-content;
+    }
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 1rem;
+    }
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-top: 1rem;
+      color: var(--color-gold);
+    }
+    @media (max-width: 768px) {
+      .checkout-layout {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="logo">SM FASHION</a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/">Home</a></li>
+        <li><a href="/products.html">Shop</a></li>
+        <li id="authLink"><a href="/login.html">Login</a></li>
+        <li>
+          <a href="/cart.html" class="cart-icon">
+            <i class="fas fa-shopping-bag"></i>
+            <span class="cart-count" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container checkout-layout">
+    <div class="checkout-form">
+      <h2 class="mb-2">Shipping Information</h2>
+      <form id="checkoutForm">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="name" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="email" class="form-control" readonly>
+        </div>
+            <div class="form-group">
+              <label>Shipping Address</label>
+              <textarea id="address" class="form-control" rows="3" required></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label>Payment Method</label>
+              <div style="display:flex; flex-direction:column; gap:1rem; margin-top:0.5rem; margin-bottom: 0.5rem;">
+                <label style="cursor:pointer; font-weight: 500;"><input type="radio" name="paymentType" value="COD" checked onchange="toggleCardDetails()"> <i class="fas fa-money-bill-wave" style="color:#555; width:25px;"></i> Cash on Delivery</label>
+                <label style="cursor:pointer; font-weight: 500;"><input type="radio" name="paymentType" value="Online" onchange="toggleCardDetails()"> <i class="fas fa-credit-card" style="color:#555; width:25px;"></i> Debit / Credit Card</label>
+                <label style="cursor:pointer; font-weight: 500;"><input type="radio" name="paymentType" value="UPI" onchange="toggleCardDetails()"> <i class="fas fa-qrcode" style="color:#555; width:25px;"></i> UPI (GPay, PhonePe, Paytm)</label>
+                <label style="cursor:pointer; font-weight: 500;"><input type="radio" name="paymentType" value="PayPal" onchange="toggleCardDetails()"> <i class="fab fa-paypal" style="color:#00457C; width:25px;"></i> PayPal</label>
+              </div>
+            </div>
+
+            <div id="cardDetails" style="display:none; background:var(--color-cream-dark); padding:1.5rem; border:1px solid #ddd; border-radius:4px; margin-bottom:1rem;">
+              <h4 style="margin-bottom: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 0.5rem;">Secure Card Payment</h4>
+              <div class="form-group">
+                <label>Card Number</label>
+                <input type="text" id="cardNumber" class="form-control" placeholder="4111 2222 3333 4444" maxlength="19">
+              </div>
+              <div style="display:flex; gap:1rem;">
+                <div class="form-group" style="flex:1;">
+                  <label>Expiry Date</label>
+                  <input type="text" id="cardExpiry" class="form-control" placeholder="MM/YY" maxlength="5">
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <label>CVV / CVC</label>
+                  <input type="password" id="cardCvv" class="form-control" placeholder="123" maxlength="4">
+                </div>
+              </div>
+            </div>
+            
+            <div id="upiDetails" style="display:none; background:var(--color-cream-dark); padding:1.5rem; border:1px solid #ddd; border-radius:4px; margin-bottom:1rem; text-align: center;">
+              <h4 style="margin-bottom: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 0.5rem;">Scan to Pay via UPI</h4>
+              <i class="fas fa-qrcode" style="font-size: 5rem; color: #333; margin-bottom: 1rem;"></i>
+              <p style="margin-bottom: 1rem; color: #555; font-size: 0.9rem;">Or enter your UPI ID (e.g., 9999999999@ybl)</p>
+              <input type="text" id="upiId" class="form-control" placeholder="Enter UPI ID">
+            </div>
+
+            <div id="paypalDetails" style="display:none; background:var(--color-cream-dark); padding:1.5rem; border:1px solid #ddd; border-radius:4px; margin-bottom:1rem; text-align: center;">
+              <i class="fab fa-paypal" style="font-size: 3rem; color: #00457C; margin-bottom: 1rem;"></i>
+              <p style="color: #444;">You will be securely redirected to PayPal to complete your purchase when you place the order.</p>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem; padding: 1rem; font-size: 1.1rem;"><i class="fas fa-lock"></i> Place Secure Order</button>
+          </form>
+    </div>
+
+    <div class="order-summary">
+      <h3 class="mb-2">Order Summary</h3>
+      <div id="summaryContent"></div>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const userInfo = getUserInfo();
+      if (!userInfo) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      if (cart.length === 0) {
+        window.location.href = '/cart.html';
+        return;
+      }
+
+      // Pre-fill user info
+      document.getElementById('name').value = userInfo.name;
+      document.getElementById('email').value = userInfo.email;
+      // Get full user details if address is not in localstorage (actually we didn't save address in localstorage during login, just basic info)
+      // Ideally fetch from profile, but let's let user type it or leave it blank if they haven't set it.
+
+      // Render summary
+      const summaryContainer = document.getElementById('summaryContent');
+      const total = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+
+      summaryContainer.innerHTML = `
+        ${cart.map(item => `
+          <div class="summary-item">
+            <div>
+              <div style="font-weight: 600;">${item.name}</div>
+              <div style="font-size: 0.9rem; color: #666;">Qty: ${item.qty}</div>
+            </div>
+            <div>Rs. ${item.price * item.qty}</div>
+          </div>
+        `).join('')}
+        <div class="summary-total">
+          <span>Total:</span>
+          <span>Rs. ${total}</span>
+        </div>
+      `;
+
+      // Handle Submit
+      document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const address = document.getElementById('address').value;
+      const paymentMethod = document.querySelector('input[name="paymentType"]:checked').value;
+
+      // Simple mock validation for payment fields
+      if (paymentMethod === 'Online') {
+        const cn = document.getElementById('cardNumber').value;
+        const ce = document.getElementById('cardExpiry').value;
+        const cv = document.getElementById('cardCvv').value;
+        if(cn.length < 15 || ce.length < 5 || cv.length < 3) {
+          alert('Please enter completely valid credit card details.');
+          return;
+        }
+      } else if (paymentMethod === 'UPI') {
+        const upi = document.getElementById('upiId').value;
+        if(upi.length < 5 || !upi.includes('@')) {
+          alert('Please enter a valid UPI ID (e.g. number@okbank).');
+          return;
+        }
+      }
+
+      const orderData = {
+        products: cart.map(item => ({
+          productId: item.product,
+          name: item.name,
+          quantity: item.qty,
+          price: item.price
+        })),
+        totalAmount: total,
+        shippingAddress: address,
+        paymentMethod: paymentMethod
+      };
+
+      try {
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify(orderData)
+        });
+          
+          if(res.ok) {
+            alert('Order placed successfully!');
+            localStorage.removeItem('cartItems');
+            window.location.href = '/profile.html';
+          } else {
+            const data = await res.json();
+            alert(data.message || 'Error placing order');
+          }
+      } catch (e) {
+        console.error(e);
+        alert('Server error while placing order.');
+      }
+    });
+
+    window.toggleCardDetails = function() {
+      const type = document.querySelector('input[name="paymentType"]:checked').value;
+      const cardDetails = document.getElementById('cardDetails');
+      const upiDetails = document.getElementById('upiDetails');
+      const paypalDetails = document.getElementById('paypalDetails');
+      
+      cardDetails.style.display = (type === 'Online') ? 'block' : 'none';
+      upiDetails.style.display = (type === 'UPI') ? 'block' : 'none';
+      paypalDetails.style.display = (type === 'PayPal') ? 'block' : 'none';
+
+      // Card Fields toggles
+      const isOnline = type === 'Online';
+      document.getElementById('cardNumber').required = isOnline;
+      document.getElementById('cardExpiry').required = isOnline;
+      document.getElementById('cardCvv').required = isOnline;
+      
+      // UPI Fields Toggles
+      document.getElementById('upiId').required = (type === 'UPI');
+    };
+    });
+  </script>
+</body>
+</html>

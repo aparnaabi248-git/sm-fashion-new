@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop | SM Fashion</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .shop-layout {
+      display: flex;
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+    .filters {
+      width: 250px;
+      padding-right: 2rem;
+      border-right: 1px solid #ddd;
+    }
+    .filters h3 {
+      text-transform: uppercase;
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
+      letter-spacing: 1px;
+    }
+    .filter-list li {
+      margin-bottom: 0.8rem;
+      border-radius: 10px;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .filter-list a {
+      color: #4d3b3f;
+      font-weight: 600;
+      display: block;
+      padding: 0.6rem 0.75rem;
+      border-radius: 10px;
+      transition: var(--transition);
+      position: relative;
+      z-index: 2;
+    }
+    .filter-list a:hover,
+    .filter-list a.active {
+      color: #fff;
+      background: linear-gradient(100deg, #d9113c, #eaa829);
+      box-shadow: 0 6px 18px rgba(234, 168, 41, 0.32);
+      transform: translateX(4px);
+    }
+    .filter-list a.active:before {
+      content: '✓';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      color: #fff;
+    }
+
+    .sub-filter-list {
+      display: none;
+      padding-left: 1rem;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      border-left: 2px solid rgba(234, 168, 41, 0.35);
+      margin-left: 0.15rem;
+      transition: var(--transition);
+    }
+    .sub-filter-list li { margin-bottom: 0.3rem; }
+    .sub-filter-list a {
+      color: #775d61;
+      font-weight: 500;
+      display: block;
+      padding: 0.3rem 0.5rem;
+      border-radius: 8px;
+      transition: var(--transition);
+    }
+    .sub-filter-list a:hover,
+    .sub-filter-list a.active {
+      color: #fff;
+      background: linear-gradient(100deg, #f9c637, #b9263c);
+      transform: translateX(2px);
+    }
+    .filter-list li:hover > .sub-filter-list,
+    .filter-list li.active > .sub-filter-list {
+      display: block;
+    }
+    .products-display {
+      flex: 1;
+    }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+    @media (max-width: 768px) {
+      .shop-layout {
+        flex-direction: column;
+      }
+      .filters {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 2rem;
+      }
+    }
+
+    /* Full-image modal */
+    #imageModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      background: rgba(0, 0, 0, 0.76);
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    #imageModal.open {
+      display: flex;
+    }
+
+    #imageModal .modal-body {
+      max-width: 95%;
+      max-height: 92%;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      background: #fff;
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.5);
+      animation: pop 0.3s ease;
+    }
+
+    #imageModal .modal-body img {
+      width: 100%;
+      height: auto;
+      max-height: 82vh;
+      object-fit: contain;
+      display: block;
+      background: #000;
+    }
+
+    #imageModal .modal-caption {
+      padding: 0.8rem 1rem;
+      font-size: 0.95rem;
+      color: #2a1b1c;
+      background: #fff;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+
+    #imageModal .close-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 32px;
+      height: 32px;
+      background: var(--color-gold);
+      color: var(--color-primary);
+      border: none;
+      border-radius: 50%;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      line-height: 32px;
+      text-align: center;
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container nav-container" style="display: flex; flex-direction: row; align-items: center; gap: 2rem; justify-content: space-between;">
+      <a href="/" class="logo" style="display: flex; align-items: center; gap: 1rem; text-decoration: none; flex-shrink: 0; font-family: var(--font-heading); font-weight: 800;">
+        <img src="/uploads/logo.png" alt="Logo" style="height: 90px; width: 90px; object-fit: contain; border-radius: 50%;">
+        <span style="display:inline-block; font-size: 3rem; white-space: nowrap; background: linear-gradient(135deg, #0a4d33 0%, #148057 50%, #063121 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0px 5px 15px rgba(20, 128, 87, 0.4);">SM FASHION</span>
+      </a>
+      <ul class="nav-links" id="navLinks" style="display: flex; align-items: center; justify-content: flex-end; gap: 2rem; margin: 0; padding: 0; list-style: none; flex: 1; font-weight: 700; font-size: 1.1rem;">
+        <li><a href="/">Home</a></li>
+        <li><a href="/products.html" class="active">Shop</a></li>
+        <li id="authLink"><a href="/login.html">Login</a></li>
+        <li>
+          <a href="/cart.html" class="cart-icon">
+            <i class="fas fa-shopping-bag"></i>
+            <span class="cart-count" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container shop-layout">
+    <!-- Filters -->
+    <div class="filters">
+      <h3>Categories</h3>
+      <ul class="filter-list">
+        <li><a href="#" class="filter-link" data-category="">All Products</a></li>
+        <li>
+          <a href="#" class="filter-link" data-category="Saree">Sarees</a>
+          <ul class="sub-filter-list" id="subSaree">
+            <li><a href="#" class="sub-filter-link" data-category="Saree" data-subcategory="Silk">Silk saree</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Saree" data-subcategory="Cotton">Cotton Saree</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Saree" data-subcategory="Organza">Organza</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Saree" data-subcategory="Tissue">Tissue</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Saree" data-subcategory="Georgette">Georgette</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Saree" data-subcategory="Chiffon">Chiffon</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Saree" data-subcategory="Crepe">Crepe</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Saree" data-subcategory="Linen">Linen</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Saree" data-subcategory="Net">Net</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Saree" data-subcategory="Satin">Satin</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Saree" data-subcategory="Velvet">Velvet</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#" class="filter-link" data-category="Salwars">Salwars</a>
+          <ul class="sub-filter-list" id="subSalwars">
+            <li><a href="#" class="sub-filter-link" data-category="Salwars" data-subcategory="Cotton">Cotton</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Salwars" data-subcategory="Silk">Silk</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Salwars" data-subcategory="Rayon">Rayon</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Salwars" data-subcategory="Net">Net</a></li>
+            <li><a href="#" class="sub-filter-link" data-category="Salwars" data-subcategory="Organza">Organza</a></li>
+          </ul>
+        </li>
+        <li><a href="#" class="filter-link" data-category="Nightwear">Nightwear</a></li>
+      </ul>
+
+      <h3 class="mt-2">Filter by Price</h3>
+      <div class="form-group" style="display:flex; gap:0.5rem; align-items:center;">
+        <input type="number" id="minPrice" class="form-control" placeholder="Min" style="padding:0.5rem;">
+        <span>-</span>
+        <input type="number" id="maxPrice" class="form-control" placeholder="Max" style="padding:0.5rem;">
+      </div>
+      <button class="btn btn-outline" style="width:100%; padding:0.5rem; margin-bottom: 2rem;" onclick="applyFilters()">Apply Filters</button>
+
+      <h3>Sort By</h3>
+      <select id="sortSelect" class="form-control" onchange="applyFilters()" style="margin-bottom: 2rem;">
+        <option value="newest">Newest Arrivals</option>
+        <option value="priceAsc">Price: Low to High</option>
+        <option value="priceDesc">Price: High to Low</option>
+      </select>
+    </div>
+
+    <!-- Products -->
+    <div class="products-display">
+      <h2 id="categoryTitle" style="font-family: var(--font-heading); margin-bottom: 2rem;">All Products</h2>
+      <div class="products-grid" id="productsGrid">
+        <p>Loading products...</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="imageModal">
+    <div class="modal-body">
+      <button class="close-btn" onclick="closeImageModal()">×</button>
+      <img id="modalImage" src="" alt="" />
+      <div class="modal-caption" id="modalCaption"></div>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    let currentCat = '';
+    let currentSubCat = '';
+    let currentSearch = '';
+
+    // Initialize Wishlist
+    let wishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
+
+    // Check if wishlisted
+    window.isWishlisted = function(id) {
+      return wishlist.some(item => item.id === id);
+    };
+
+    // Toggle Wishlist Logic
+    window.toggleWishlist = function(id, name, price, image) {
+      const idx = wishlist.findIndex(item => item.id === id);
+      const icon = document.getElementById(`heart-${id}`);
+      if (idx > -1) {
+        wishlist.splice(idx, 1);
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+        icon.style.color = '#ccc';
+      } else {
+        wishlist.push({ id, name, price, image });
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+        icon.style.color = 'var(--color-gold)';
+      }
+      localStorage.setItem('wishlistItems', JSON.stringify(wishlist));
+    };
+
+    const loadProducts = async () => {
+      try {
+        let minP = document.getElementById('minPrice').value.trim();
+        let maxP = document.getElementById('maxPrice').value.trim();
+        const sort = document.getElementById('sortSelect').value;
+
+        const hasMin = minP !== '';
+        const hasMax = maxP !== '';
+
+        if (hasMin && hasMax && Number(minP) > Number(maxP)) {
+          // Support reversed input by users: swap values so filter still works
+          [minP, maxP] = [maxP, minP];
+          document.getElementById('minPrice').value = minP;
+          document.getElementById('maxPrice').value = maxP;
+        }
+
+        const params = new URLSearchParams();
+        if (currentCat) params.append('category', currentCat);
+        if (currentSubCat) params.append('subCategory', currentSubCat);
+        if (currentSearch) params.append('search', currentSearch);
+        if (hasMin) params.append('minPrice', minP);
+        if (hasMax) params.append('maxPrice', maxP);
+        if (sort) params.append('sort', sort);
+        
+        const url = params.toString() ? `/api/products?${params.toString()}` : '/api/products';
+        console.log('Fetching products:', url);
+        const res = await fetch(url);
+        const products = await res.json();
+        console.log('Products returned:', products.length);
+        
+        const grid = document.getElementById('productsGrid');
+        
+        if(products.length === 0) {
+          grid.innerHTML = '<p>No products available at the moment.</p>';
+          return;
+        }
+
+        grid.innerHTML = products.map(p => `
+          <div class="product-card" style="position: relative;">
+            <button class="wishlist-btn" onclick="toggleWishlist('${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price}, '${p.image.replace(/\\/g, '/')}')" style="position: absolute; top: 10px; right: 10px; background: white; border: none; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; padding: 0;">
+               <i class="${isWishlisted(p._id) ? 'fas' : 'far'} fa-heart" id="heart-${p._id}" style="color: ${isWishlisted(p._id) ? 'var(--color-gold)' : '#ccc'}; font-size: 1.1rem; margin-top: 2px;"></i>
+            </button>
+            ${p.bestseller ? '<div style="position:absolute; top:10px; left:10px; background:#00c6a9; color:white; padding:4px 8px; border-radius:4px; z-index:10; font-weight:bold; font-size:0.75rem; text-transform:uppercase; box-shadow:0 2px 4px rgba(0,0,0,0.15); letter-spacing:0.5px;">BEST SELLER</div>' : ''}
+            ${p.smChoice ? `<div style="position:absolute; top:10px; left:${p.bestseller ? '105px' : '10px'}; background:#d9113c; color:white; padding:4px 8px; border-radius:4px; z-index:10; font-weight:bold; font-size:0.75rem; text-transform:uppercase; box-shadow:0 2px 4px rgba(0,0,0,0.15); letter-spacing:0.5px;">SM CHOICE</div>` : ''}
+            ${p.stock === 0 ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(255,0,0,0.8); color:white; padding:10px 20px; border-radius:4px; z-index:10; font-weight:bold;">Out of Stock</div>' : ''}
+            <img src="${p.image}" alt="${p.name}" class="product-image" ${p.stock === 0 ? 'style="opacity:0.6"' : ''}>
+            <div class="product-info">
+              <div class="product-category">${p.category}</div>
+              <h3 class="product-title">${p.name}</h3>
+              <div class="product-price">Rs. ${p.price}</div>
+              <button class="btn btn-outline" ${p.stock === 0 ? 'disabled style="cursor:not-allowed"' : `onclick="addToCart('${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price}, '${p.image.replace(/\\/g, '/')}')"`}>${p.stock === 0 ? 'Out of Stock' : 'Add to Cart'}</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    // Expose applyFilters to window for onclick handlers
+    window.applyFilters = () => {
+      loadProducts();
+      updateUrl();
+    };
+
+    function updateUrl() {
+      const minP = document.getElementById('minPrice').value.trim();
+      const maxP = document.getElementById('maxPrice').value.trim();
+      const sort = document.getElementById('sortSelect').value;
+
+      const hasMin = minP !== '';
+      const hasMax = maxP !== '';
+
+      const params = new URLSearchParams();
+      if (currentCat) params.append('category', currentCat);
+      if (currentSubCat) params.append('subCategory', currentSubCat);
+      if (currentSearch) params.append('search', currentSearch);
+      if (hasMin) params.append('minPrice', minP);
+      if (hasMax) params.append('maxPrice', maxP);
+      if (sort) params.append('sort', sort);
+
+      const newUrl = params.toString() ? `/products.html?${params.toString()}` : '/products.html';
+      window.history.pushState({}, '', newUrl);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      currentCat = urlParams.get('category') || '';
+      currentSubCat = urlParams.get('subCategory') || '';
+      currentSearch = urlParams.get('search') || '';
+      
+      document.getElementById('minPrice').value = urlParams.get('minPrice') || '';
+      document.getElementById('maxPrice').value = urlParams.get('maxPrice') || '';
+      document.getElementById('sortSelect').value = urlParams.get('sort') || 'newest';
+      
+      // Sync navbar select/inputs if present
+      const navCat = document.getElementById('navSearchCat');
+      const navInput = document.getElementById('navSearchInput');
+      if (navCat) navCat.value = currentCat;
+      if (navInput) navInput.value = currentSearch;
+      
+      loadProducts();
+      updateTitleAndActiveLink();
+
+      // Handle nav search submit without reloading if on the same page
+      const navForm = document.getElementById('navSearchForm');
+      if (navForm) {
+        navForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          currentCat = navCat.value;
+          currentSearch = navInput.value;
+          currentSubCat = ''; // reset
+          loadProducts();
+          updateTitleAndActiveLink();
+          updateUrl();
+        });
+      }
+
+      // Handle main filter clicks
+      document.querySelectorAll('.filter-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          currentCat = e.target.getAttribute('data-category');
+          currentSubCat = ''; // reset subcategory on main change
+          applyFilters();
+        });
+      });
+
+      // Handle sub filter clicks
+      document.querySelectorAll('.sub-filter-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation(); // prevent triggering parent links
+          currentCat = e.target.getAttribute('data-category');
+          currentSubCat = e.target.getAttribute('data-subcategory');
+          applyFilters();
+        });
+      });
+
+      window.addEventListener('popstate', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        currentCat = urlParams.get('category') || '';
+        currentSubCat = urlParams.get('subCategory') || '';
+        currentSearch = urlParams.get('search') || '';
+        document.getElementById('minPrice').value = urlParams.get('minPrice') || '';
+        document.getElementById('maxPrice').value = urlParams.get('maxPrice') || '';
+        document.getElementById('sortSelect').value = urlParams.get('sort') || 'newest';
+        updateTitleAndActiveLink();
+        loadProducts();
+      });
+    });
+
+    function updateTitleAndActiveLink() {
+      document.getElementById('categoryTitle').innerText = currentSubCat ? `${currentCat} - ${currentSubCat}` : (currentCat || 'All Products');
+      
+      // Update UI for main links
+      document.querySelectorAll('.filter-link').forEach(link => {
+        link.classList.remove('active');
+        if(link.getAttribute('data-category') === currentCat && !currentSubCat) {
+          link.classList.add('active');
+        }
+      });
+
+      // Show hide submenus
+      const subSaree = document.getElementById('subSaree');
+      const subSalwars = document.getElementById('subSalwars');
+      if (subSaree) subSaree.style.display = (currentCat === 'Saree') ? 'block' : 'none';
+      if (subSalwars) subSalwars.style.display = (currentCat === 'Salwars') ? 'block' : 'none';
+
+      // Update UI for sub links
+      document.querySelectorAll('.sub-filter-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('data-subcategory') === currentSubCat) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    // Full-size image viewer
+    document.addEventListener('click', (e) => {
+      if (e.target.matches('.product-image')) {
+        const src = e.target.getAttribute('src');
+        const alt = e.target.getAttribute('alt') || 'Product Image';
+        openImageModal(src, alt);
+      }
+    });
+
+    function openImageModal(src, alt) {
+      const modal = document.getElementById('imageModal');
+      document.getElementById('modalImage').src = src;
+      document.getElementById('modalImage').alt = alt;
+      document.getElementById('modalCaption').innerText = alt;
+      modal.classList.add('open');
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('imageModal');
+      modal.classList.remove('open');
+      document.getElementById('modalImage').src = '';
+      document.getElementById('modalCaption').innerText = '';
+    }
+
+    document.getElementById('imageModal').addEventListener('click', (e) => {
+      if (e.target.id === 'imageModal') {
+        closeImageModal();
+      }
+    });
+
+  </script>
+</body>
+</html>

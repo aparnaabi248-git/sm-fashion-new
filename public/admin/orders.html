@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Orders | SM Fashion Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    .status-badge {
+      display: inline-block;
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .status-Pending { background: #fdf3e1; color: #f39c12; }
+    .status-Processing { background: #e3f2fd; color: #1976d2; }
+    .status-Shipped { background: #e1f5fe; color: #0288d1; }
+    .status-Delivered { background: #e8f5e9; color: #2e7d32; }
+    .status-Cancelled { background: #ffebee; color: #c62828; }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <a href="/" class="brand">SM FASHION</a>
+      <nav class="admin-nav">
+        <a href="/admin/dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="/admin/products.html"><i class="fas fa-box"></i> Products</a>
+        <a href="/admin/orders.html" class="active"><i class="fas fa-shopping-cart"></i> Orders</a>
+        <a href="#" onclick="logout(event)" style="margin-top: 2rem;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </nav>
+    </aside>
+
+    <main class="admin-content">
+      <div class="admin-header" style="flex-direction: column; align-items: stretch; gap: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h2>Manage Orders</h2>
+          <div>
+            <button class="btn btn-outline" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> Export PDF</button>
+            <button class="btn btn-outline" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; background: #fff; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+          <button class="btn btn-outline" onclick="changeDate(-1)"><i class="fas fa-chevron-left"></i> Prev Day</button>
+          <input type="date" id="orderDate" class="form-control" style="width: auto; margin: 0; padding: 0.5rem;" onchange="filterOrdersByDate()">
+          <button class="btn btn-outline" onclick="changeDate(1)">Next Day <i class="fas fa-chevron-right"></i></button>
+          <button class="btn btn-primary" onclick="clearDateFilter()">All Orders</button>
+        </div>
+      </div>
+
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Total Amount</th>
+            <th>Status</th>
+            <th>Update Status</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTableBody">
+          <tr><td colspan="6">Loading...</td></tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    const headers = { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const userInfo = getUserInfo();
+      if (!userInfo || !userInfo.isAdmin) {
+        window.location.href = '/login.html';
+        return;
+      }
+      fetchOrders();
+    });
+
+    let allOrders = [];
+    let currentFilterDate = null; // null means all orders
+
+    async function fetchOrders() {
+      try {
+        const res = await fetch('/api/orders', { headers });
+        allOrders = await res.json();
+        // pre-fill date input with today's date initially if you want, or show all
+        filterOrdersByDate();
+      } catch(err) {
+        console.error(err);
+      }
+    }
+
+    function changeDate(days) {
+      const dateInput = document.getElementById('orderDate');
+      let targetDate = dateInput.value ? new Date(dateInput.value) : new Date();
+      targetDate.setDate(targetDate.getDate() + days);
+      dateInput.value = targetDate.toISOString().split('T')[0];
+      filterOrdersByDate();
+    }
+
+    function clearDateFilter() {
+      document.getElementById('orderDate').value = '';
+      currentFilterDate = null;
+      renderOrders(allOrders);
+    }
+
+    function filterOrdersByDate() {
+      const dateVal = document.getElementById('orderDate').value;
+      if (!dateVal) {
+        currentFilterDate = null;
+        renderOrders(allOrders);
+        return;
+      }
+      currentFilterDate = dateVal;
+      const targetStr = new Date(dateVal).toDateString();
+      const filtered = allOrders.filter(o => new Date(o.date).toDateString() === targetStr);
+      renderOrders(filtered);
+    }
+
+    function getDisplayedOrders() {
+      return currentFilterDate ? allOrders.filter(o => new Date(o.date).toDateString() === new Date(currentFilterDate).toDateString()) : allOrders;
+    }
+
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("SM Fashion Orders", 14, 15);
+      const orders = getDisplayedOrders();
+      const tableData = orders.map(o => [
+        o._id.substring(o._id.length - 6),
+        o.userId ? o.userId.name : 'Unknown User',
+        new Date(o.date).toLocaleDateString(),
+        `Rs.${o.totalAmount}`,
+        o.status
+      ]);
+      doc.autoTable({
+        head: [['ID', 'Customer', 'Date', 'Total', 'Status']],
+        body: tableData,
+        startY: 20
+      });
+      doc.save(`Orders_${currentFilterDate || 'All'}.pdf`);
+    }
+
+    function exportExcel() {
+      const orders = getDisplayedOrders();
+      const wsData = orders.map(o => ({
+        ID: o._id,
+        Customer: o.userId ? o.userId.name : 'Unknown User',
+        Date: new Date(o.date).toLocaleDateString(),
+        Total: o.totalAmount,
+        Status: o.status
+      }));
+      const ws = window.XLSX.utils.json_to_sheet(wsData);
+      const wb = window.XLSX.utils.book_new();
+      window.XLSX.utils.book_append_sheet(wb, ws, "Orders");
+      window.XLSX.writeFile(wb, `Orders_${currentFilterDate || 'All'}.xlsx`);
+    }
+
+    function renderOrders(orders) {
+      const tbody = document.getElementById('ordersTableBody');
+      if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">No orders found.</td></tr>';
+        return;
+      }
+      
+      const statuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+
+      tbody.innerHTML = orders.map(o => `
+        <tr>
+          <td>${o._id}</td>
+          <td>${o.userId ? o.userId.name : 'Unknown User'}</td>
+          <td>${new Date(o.date).toLocaleDateString()}</td>
+          <td>Rs. ${o.totalAmount}</td>
+          <td><span class="status-badge status-${o.status}">${o.status}</span></td>
+          <td>
+            <select class="form-control" style="width: auto; display: inline-block; padding: 0.3rem;" onchange="updateStatus('${o._id}', this.value)">
+              ${statuses.map(s => `<option value="${s}" ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function updateStatus(id, newStatus) {
+      if(confirm(`Are you sure you want to change the status to ${newStatus}?`)) {
+        try {
+          const res = await fetch(`/api/orders/${id}/status`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({ status: newStatus })
+          });
+          if(res.ok) {
+            fetchOrders();
+          } else {
+            alert('Error updating status');
+            fetchOrders(); // Refresh to revert visual change
+          }
+        } catch(e) {
+          console.error(e);
+          fetchOrders();
+        }
+      } else {
+        fetchOrders(); // Revert visual change if cancelled
+      }
+    }
+  </script>
+</body>
+</html>

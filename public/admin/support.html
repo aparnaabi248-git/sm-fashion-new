@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Requests | SM Fashion Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <a href="/" class="brand">SM FASHION</a>
+      <nav class="admin-nav">
+        <a href="/admin/dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="/admin/products.html"><i class="fas fa-box"></i> Products</a>
+        <a href="/admin/orders.html"><i class="fas fa-shopping-cart"></i> Orders</a>
+        <a href="/admin/support.html" class="active"><i class="fas fa-headset"></i> Support Requests</a>
+        <a href="#" onclick="logout(event)" style="margin-top: 2rem;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </nav>
+    </aside>
+
+    <main class="admin-content">
+      <div class="admin-header">
+        <h2>Support Requests</h2>
+      </div>
+
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>User</th>
+            <th>Type</th>
+            <th>Order</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="supportTableBody">
+          <tr><td colspan="7">Loading...</td></tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    const loadRequests = async () => {
+      try {
+        const res = await fetch('/api/support', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        if (!res.ok) throw new Error('Unable to load support requests');
+        const requests = await res.json();
+
+        const tbody = document.getElementById('supportTableBody');
+        if (!requests || requests.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7">No support requests found.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = requests.map(r => `
+          <tr>
+            <td>${new Date(r.createdAt).toLocaleString()}</td>
+            <td>${r.name} (${r.email})</td>
+            <td>${r.type || 'Other'}</td>
+            <td>${r.orderId || '-'}</td>
+            <td>${r.reason}</td>
+            <td>${r.status}</td>
+            <td>
+              <select data-id="${r._id}" class="status-select">
+                <option ${r.status==='Open' ? 'selected' : ''}>Open</option>
+                <option ${r.status==='In Review' ? 'selected' : ''}>In Review</option>
+                <option ${r.status==='Resolved' ? 'selected' : ''}>Resolved</option>
+                <option ${r.status==='Rejected' ? 'selected' : ''}>Rejected</option>
+              </select>
+            </td>
+          </tr>
+        `).join('');
+
+        document.querySelectorAll('.status-select').forEach(select => {
+          select.addEventListener('change', async () => {
+            const id = select.dataset.id;
+            const status = select.value;
+            await fetch(`/api/support/${id}/status`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+              body: JSON.stringify({ status })
+            });
+          });
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const userInfo = getUserInfo();
+      if (!userInfo || !userInfo.isAdmin) {
+        window.location.href = '/login.html';
+        return;
+      }
+      loadRequests();
+    });
+  </script>
+</body>
+</html>

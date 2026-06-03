@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SM Fashion | Luxury Online Boutique</title>
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Home specific styles */
+    .hero {
+      height: 80vh;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .hero-half {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      position: relative;
+    }
+    
+    .brand-half {
+      background: linear-gradient(135deg, var(--color-dark) 0%, var(--color-primary-light) 100%);
+      color: var(--color-white);
+    }
+    
+    .brand-half .brand-title {
+      display: inline-block;
+      font-size: 5.5rem;
+      font-weight: 800;
+      letter-spacing: 5px;
+      margin-bottom: 0.5rem;
+      background: var(--gradient-gold);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: var(--color-gold); /* fallback for non-webkit browsers */
+      text-shadow: none;
+    }
+
+    .brand-half .brand-subtitle {
+       font-size: 1.5rem;
+       color: var(--color-gold-light);
+       letter-spacing: 3px;
+       font-family: var(--font-heading);
+       text-transform: uppercase;
+       margin-top: 1rem;
+    }
+    
+    .elegance-half {
+      background: 
+        linear-gradient(rgba(122, 0, 22, 0.5), rgba(0, 0, 0, 0.7)),
+        url('/uploads/cat_saree.png') center/cover no-repeat;
+      color: var(--color-white);
+    }
+    
+    .hero-content h1 {
+      color: var(--color-white);
+      font-size: 4.5rem;
+      margin-bottom: 1rem;
+      text-shadow: 0px 4px 15px rgba(235, 177, 33, 0.6);
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+    
+    .hero-content p {
+      color: var(--color-white);
+      font-size: 1.2rem;
+      margin-bottom: 2.5rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    
+    .categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    
+    .category-card {
+      position: relative;
+      height: 400px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    
+    .category-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    
+    .category-card:hover img {
+      transform: scale(1.05);
+    }
+    
+    .category-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+      display: flex;
+      align-items: flex-end;
+      padding: 2rem;
+    }
+    
+    .category-overlay h3 {
+      color: var(--color-white);
+      font-size: 2rem;
+      margin: 0;
+    }
+    
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container nav-container" style="display: flex; flex-direction: row; align-items: center; gap: 2rem; justify-content: space-between;">
+      
+      <!-- Brand Logo -->
+      <a href="/" class="logo" style="display: flex; align-items: center; gap: 1rem; text-decoration: none; flex-shrink: 0; font-family: var(--font-heading); font-weight: 800;">
+        <img src="/uploads/logo.png" alt="Logo" style="height: 90px; width: 90px; object-fit: contain; border-radius: 50%;">
+        <span style="display:inline-block; font-size: 3rem; white-space: nowrap; background: linear-gradient(135deg, #0a4d33 0%, #148057 50%, #063121 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0px 5px 15px rgba(20, 128, 87, 0.4);">SM FASHION</span>
+      </a>
+      
+      <!-- Navigation Links -->
+      <ul class="nav-links" id="navLinks" style="display: flex; align-items: center; justify-content: flex-end; gap: 2rem; margin: 0; padding: 0; list-style: none; flex: 1; font-weight: 700; font-size: 1.1rem;">
+        <li><a href="/" class="active">Home</a></li>
+        <li><a href="/products.html">Shop</a></li>
+        <li id="authLink"><a href="/login.html">Login</a></li>
+        <li>
+          <a href="/cart.html" class="cart-icon">
+            <i class="fas fa-shopping-bag"></i>
+            <span class="cart-count" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero" style="position: relative; height: 75vh; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center;">
+    <!-- Grid Background -->
+    <div style="position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr 1fr; z-index: 0;">
+      <div style="background: url('/uploads/cat_saree.png') center/cover no-repeat; height: 100%;"></div>
+      <div style="background: url('/uploads/cat_salwars.png') center/cover no-repeat; height: 100%; border-left: 3px solid #fff; border-right: 3px solid #fff;"></div>
+      <div style="background: url('/uploads/cat_nightwear.png') center/cover no-repeat; height: 100%;"></div>
+    </div>
+    
+    <!-- Dark overlay for text readability -->
+    <div style="position: absolute; inset: 0; background: linear-gradient(rgba(122, 0, 22, 0.45), rgba(0, 0, 0, 0.65)); z-index: 1;"></div>
+    
+    <!-- Hero Content -->
+    <div class="hero-content" style="position: relative; z-index: 2; padding: 0 20px;">
+      <h1 style="color: white; font-size: 5rem; margin-bottom: 1rem; text-shadow: 0px 5px 20px rgba(0,0,0,0.8); font-weight: 800; letter-spacing: 2px;">Elegance Redefined</h1>
+      <p style="color: white; font-size: 1.1rem; margin-bottom: 2.5rem; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 600; text-shadow: 0px 2px 10px rgba(0,0,0,0.8);">Discover our exclusive luxury collection of Sarees, Salwars, and Nightwear</p>
+      <a href="/products.html" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.05rem; letter-spacing: 1px; border-radius: 50px;">SHOP COLLECTION</a>
+    </div>
+  </header>
+
+  <!-- Categories -->
+  <section class="container mb-3">
+    <h2 class="section-title">Shop by Category</h2>
+    <div class="categories">
+      <div class="category-card" onclick="window.location.href='/products.html?category=Saree'">
+        <img src="/uploads/cat_saree.png" alt="Saree">
+        <div class="category-overlay">
+          <h3>Saree</h3>
+        </div>
+      </div>
+      <div class="category-card" onclick="window.location.href='/products.html?category=Salwars'">
+        <img src="/uploads/cat_salwars.png" alt="Salwars">
+        <div class="category-overlay">
+          <h3>Salwars</h3>
+        </div>
+      </div>
+      <div class="category-card" onclick="window.location.href='/products.html?category=Nightwear'">
+        <img src="/uploads/cat_nightwear.png" alt="Nightwear">
+        <div class="category-overlay">
+          <h3>Nightwear</h3>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trending Now -->
+  <section class="container mb-3">
+    <h2 class="section-title">Trending Now</h2>
+    <div class="products-grid" id="trendingProducts">
+      <div style="text-align:center; grid-column: 1 / -1;">Loading products...</div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <div class="footer-logo">SM FASHION</div>
+          <p>Premium boutique offering the finest collection of luxury ethnic wear and elegant nightwear.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="/products.html">Shop All</a></li>
+            <li><a href="/products.html?category=Saree">Sarees</a></li>
+            <li><a href="/products.html?category=Salwars">Salwars</a></li>
+            <li><a href="/products.html?category=Nightwear">Nightwear</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Customer Care</h4>
+          <ul>
+            <li><a href="/contact.html">Contact Us</a></li>
+            <li><a href="/shipping.html">Shipping Policy</a></li>
+            <li><a href="/returns.html">Returns & Exchanges</a></li>
+            <li style="margin-top: 1rem;">
+              <a href="https://wa.me/919789395057" target="_blank" style="display:flex; align-items:center; gap:0.5rem; color:#25D366; font-weight:bold; font-size:1.1rem; text-decoration:none;">
+                <i class="fab fa-whatsapp" style="font-size:1.5rem;"></i> +91 9789395057
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Connect</h4>
+          <ul style="display:flex; gap:1rem; font-size:1.5rem;">
+            <li><a href="https://www.instagram.com/sm.fashion1128?igsh=N2s5aXN0MzZjcGdo" target="_blank"><i class="fab fa-instagram"></i></a></li>
+            <li><a href="#" target="_blank"><i class="fab fa-facebook"></i></a></li>
+            <li><a href="#" target="_blank"><i class="fab fa-pinterest"></i></a></li>
+            <li><a href="#" target="_blank"><i class="fab fa-youtube" style="color:#ff0000;"></i></a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 SM Fashion Boutique. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script>
+    // Fetch products by tag
+    async function loadTaggedProducts(tag, containerId) {
+      try {
+        const res = await fetch(`/api/products?${tag}=true`);
+        const products = await res.json();
+        const container = document.getElementById(containerId);
+        
+        if (products.length === 0) {
+          container.innerHTML = `<p style="text-align:center; grid-column: 1 / -1;">No ${tag} products found.</p>`;
+          return;
+        }
+
+        container.innerHTML = products.slice(0, 4).map(p => `
+          <div class="product-card" style="position:relative;">
+            ${p.stock === 0 ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(255,0,0,0.8); color:white; padding:10px 20px; font-weight:bold; border-radius:4px; z-index:10;">Out of Stock</div>' : ''}
+            <img src="${p.image}" alt="${p.name}" class="product-image" ${p.stock === 0 ? 'style="opacity:0.6"' : ''}>
+            <div class="product-info">
+              <div class="product-category">${p.category}</div>
+              <h3 class="product-title">${p.name}</h3>
+              <div class="product-price">Rs. ${p.price}</div>
+              <button class="btn btn-outline" ${p.stock === 0 ? 'disabled style="cursor:not-allowed"' : `onclick="addToCart('${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price}, '${p.image}')"`}>${p.stock === 0 ? 'Out of Stock' : 'Add to Cart'}</button>
+            </div>
+          </div>
+        `).join('');
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTaggedProducts('trending', 'trendingProducts');
+    });
+  </script>
+
+  <!-- WhatsApp Widget Removed as requested -->
+</body>
+</html>

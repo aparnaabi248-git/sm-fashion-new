@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Products | SM Fashion Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <a href="/" class="brand">SM FASHION</a>
+      <nav class="admin-nav">
+        <a href="/admin/dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="/admin/products.html" class="active"><i class="fas fa-box"></i> Products</a>
+        <a href="/admin/orders.html"><i class="fas fa-shopping-cart"></i> Orders</a>
+        <a href="#" onclick="logout(event)" style="margin-top: 2rem;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </nav>
+    </aside>
+
+    <main class="admin-content">
+      <div class="admin-header">
+        <h2>Manage Products</h2>
+        <button class="btn btn-primary" onclick="openModal()">+ Add Product</button>
+      </div>
+
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Mfg Price</th>
+            <th>Profit</th>
+            <th>Stock</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="productsTableBody">
+          <tr><td colspan="6">Loading...</td></tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+
+  <!-- Add/Edit Product Modal -->
+  <div class="modal" id="productModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Product</h3>
+        <button class="close-modal" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="productForm">
+        <input type="hidden" id="productId">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="name" class="form-control" required>
+        </div>
+        <div class="form-group" style="display:flex; gap:1rem;">
+          <div style="flex:1;">
+            <label>Mfg Price</label>
+            <input type="number" id="manufacturerPrice" class="form-control" required>
+          </div>
+          <div style="flex:1;">
+            <label>Selling Price</label>
+            <input type="number" id="price" class="form-control" required>
+          </div>
+          <div style="flex:1;">
+            <label>Stock</label>
+            <input type="number" id="stock" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-group" style="display:flex; gap:1rem;">
+          <div style="flex:1;">
+            <label>Category</label>
+            <select id="category" class="form-control" required>
+              <option value="Saree">Saree</option>
+              <option value="Salwars">Salwars</option>
+              <option value="Nightwear">Nightwear</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <label>Sub-Category</label>
+            <input type="text" id="subCategory" class="form-control" placeholder="e.g. Silk saree">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="description" class="form-control" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Image Upload</label>
+          <input type="file" id="imageFile" class="form-control" accept="image/*">
+          <input type="hidden" id="imageUrl">
+        </div>
+        <div class="form-group" style="display:flex; gap:1rem; flex-wrap:wrap;">
+          <label><input type="checkbox" id="trending"> Trending</label>
+          <label><input type="checkbox" id="bestseller"> Bestseller</label>
+          <label><input type="checkbox" id="smChoice"> SM Choice</label>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;" id="submitBtn">Save Product</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    let productsList = [];
+    const headers = { 'Authorization': `Bearer ${getToken()}` };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const userInfo = getUserInfo();
+      if (!userInfo || !userInfo.isAdmin) {
+        window.location.href = '/login.html';
+        return;
+      }
+      fetchProducts();
+    });
+
+    async function fetchProducts() {
+      try {
+        const res = await fetch('/api/products');
+        productsList = await res.json();
+        renderProducts();
+      } catch(err) {
+        console.error(err);
+      }
+    }
+
+    function renderProducts() {
+      const tbody = document.getElementById('productsTableBody');
+      if (productsList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">No products found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = productsList.map(p => {
+        const mfg = p.manufacturerPrice || 0;
+        const profit = p.price - mfg;
+        const plColor = profit >= 0 ? 'green' : 'red';
+        return `
+        <tr>
+          <td><img src="${p.image}" alt="${p.name}" style="width:50px; height:50px; object-fit:cover; border-radius:4px;"></td>
+          <td>${p.name}</td>
+          <td>${p.category}<br><small>${p.subCategory || ''}</small></td>
+          <td>Rs. ${p.price}</td>
+          <td>Rs. ${mfg}</td>
+          <td style="color:${plColor}; font-weight:bold;">Rs. ${profit}</td>
+          <td>${p.stock}</td>
+          <td>
+            <button class="action-btn edit" onclick="editProduct('${p._id}')"><i class="fas fa-edit"></i></button>
+            <button class="action-btn delete" onclick="deleteProduct('${p._id}')"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `}).join('');
+    }
+
+    const modal = document.getElementById('productModal');
+
+    function openModal() {
+      document.getElementById('productForm').reset();
+      document.getElementById('productId').value = '';
+      document.getElementById('imageUrl').value = '';
+      document.getElementById('subCategory').value = '';
+      document.getElementById('modalTitle').innerText = 'Add Product';
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+    }
+
+    async function editProduct(id) {
+      const product = productsList.find(p => p._id === id);
+      if(product) {
+        document.getElementById('productId').value = product._id;
+        document.getElementById('name').value = product.name;
+        document.getElementById('price').value = product.price;
+        document.getElementById('manufacturerPrice').value = product.manufacturerPrice || 0;
+        document.getElementById('stock').value = product.stock;
+        document.getElementById('category').value = product.category;
+        document.getElementById('subCategory').value = product.subCategory || '';
+        document.getElementById('description').value = product.description;
+        document.getElementById('trending').checked = product.trending || false;
+        document.getElementById('bestseller').checked = product.bestseller || false;
+        document.getElementById('smChoice').checked = product.smChoice || false;
+        document.getElementById('imageUrl').value = product.image;
+        document.getElementById('modalTitle').innerText = 'Edit Product';
+        modal.classList.add('active');
+      }
+    }
+
+    async function deleteProduct(id) {
+      if(confirm('Are you sure you want to delete this product?')) {
+        try {
+          const res = await fetch(`/api/products/${id}`, {
+            method: 'DELETE',
+            headers
+          });
+          if(res.ok) {
+            fetchProducts();
+          } else {
+            alert('Error deleting product');
+          }
+        } catch(err) {
+          console.error(err);
+        }
+      }
+    }
+
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      let imageUrl = document.getElementById('imageUrl').value;
+      const fileInput = document.getElementById('imageFile');
+      
+      // Upload image first if a file is selected
+      if (fileInput.files.length > 0) {
+        const formData = new FormData();
+        formData.append('image', fileInput.files[0]);
+        
+        try {
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          });
+          imageUrl = await uploadRes.text();
+        } catch(err) {
+          alert('Error uploading image');
+          return;
+        }
+      }
+
+      const productData = {
+        name: document.getElementById('name').value,
+        price: Number(document.getElementById('price').value),
+        manufacturerPrice: Number(document.getElementById('manufacturerPrice').value),
+        stock: Number(document.getElementById('stock').value),
+        category: document.getElementById('category').value,
+        subCategory: document.getElementById('subCategory').value,
+        description: document.getElementById('description').value,
+        trending: document.getElementById('trending').checked,
+        bestseller: document.getElementById('bestseller').checked,
+        smChoice: document.getElementById('smChoice').checked,
+        image: imageUrl || '/uploads/sample.jpg'
+      };
+
+      const id = document.getElementById('productId').value;
+      const url = id ? `/api/products/${id}` : '/api/products';
+      const method = id ? 'PUT' : 'POST';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify(productData)
+        });
+
+        if (res.ok) {
+          closeModal();
+          fetchProducts();
+        } else {
+          alert('Error saving product');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+  </script>
+</body>
+</html>

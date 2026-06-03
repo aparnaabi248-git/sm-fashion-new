@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | SM Fashion</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .auth-container {
+      max-width: 500px;
+      margin: 4rem auto;
+      padding: 2rem;
+      background: var(--color-white);
+      box-shadow: var(--shadow-sm);
+      border-top: 4px solid var(--color-gold);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container nav-container" style="display: flex; flex-direction: row; align-items: center; gap: 2rem; justify-content: space-between;">
+      <a href="/" class="logo" style="display: flex; align-items: center; gap: 1rem; text-decoration: none; flex-shrink: 0; font-family: var(--font-heading); font-weight: 800;">
+        <img src="/uploads/logo.png" alt="Logo" style="height: 90px; width: 90px; object-fit: contain; border-radius: 50%;">
+        <span style="display:inline-block; font-size: 3rem; white-space: nowrap; background: linear-gradient(135deg, #0a4d33 0%, #148057 50%, #063121 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0px 5px 15px rgba(20, 128, 87, 0.4);">SM FASHION</span>
+      </a>
+      <ul class="nav-links" id="navLinks" style="display: flex; align-items: center; justify-content: flex-end; gap: 2rem; margin: 0; padding: 0; list-style: none; flex: 1; font-weight: 700; font-size: 1.1rem;">
+        <li><a href="/">Home</a></li>
+        <li><a href="/products.html">Shop</a></li>
+        <li id="authLink"><a href="/login.html" class="active">Login</a></li>
+        <li>
+          <a href="/cart.html" class="cart-icon">
+            <i class="fas fa-shopping-bag"></i>
+            <span class="cart-count" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="auth-container">
+      <h2 class="text-center mb-2">Welcome Back</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email Address / Admin Login ID</label>
+          <input type="text" id="email" class="form-control" placeholder="Enter email or 'admin'" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+      </form>
+      <p class="text-center mt-1">
+        Don't have an account? <a href="/register.html" style="color:var(--color-gold)">Register here</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('userInfo', JSON.stringify(data));
+          
+          if (data.isAdmin) {
+            window.location.href = '/admin/dashboard.html';
+          } else {
+            window.location.href = '/';
+          }
+        } else {
+          alert(data.message || 'Login failed');
+        }
+      } catch (err) {
+        alert('An error occurred');
+      }
+    });
+  </script>
+</body>
+</html>

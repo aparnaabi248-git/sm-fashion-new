@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart | SM Fashion</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .cart-layout {
+      margin-top: 3rem;
+    }
+    .cart-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+    }
+    .cart-table th, .cart-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    .cart-table th {
+      background-color: var(--color-cream-dark);
+      font-weight: 600;
+    }
+    .cart-item-img {
+      width: 60px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-right: 1rem;
+    }
+    .qty-btn {
+      padding: 0.2rem 0.5rem;
+      cursor: pointer;
+      background: #eee;
+      border: 1px solid #ddd;
+    }
+    .cart-summary {
+      background: var(--color-white);
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+      max-width: 400px;
+      margin-left: auto;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+    .summary-total {
+      font-weight: 700;
+      font-size: 1.3rem;
+      border-top: 2px solid var(--color-gold);
+      padding-top: 1rem;
+    }
+    .empty-cart {
+      text-align: center;
+      padding: 4rem 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="logo">SM FASHION</a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/">Home</a></li>
+        <li><a href="/products.html">Shop</a></li>
+        <li id="authLink"><a href="/login.html">Login</a></li>
+        <li>
+          <a href="/cart.html" class="cart-icon active">
+            <i class="fas fa-shopping-bag"></i>
+            <span class="cart-count" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container cart-layout">
+    <h2 class="mb-2" style="font-family: var(--font-heading);">Shopping Cart</h2>
+    
+    <div id="cartContent">
+      <!-- Injected by JS -->
+    </div>
+
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    const renderCart = () => {
+      const container = document.getElementById('cartContent');
+      
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="empty-cart">
+            <h3>Your cart is empty</h3>
+            <a href="/products.html" class="btn btn-primary mt-1">Continue Shopping</a>
+          </div>
+        `;
+        return;
+      }
+
+      const total = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+
+      container.innerHTML = `
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Subtotal</th>
+              <th>Remove</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${cart.map((item, index) => `
+              <tr>
+                <td>
+                  <img src="${item.image}" class="cart-item-img" alt="${item.name}">
+                  ${item.name}
+                </td>
+                <td>Rs. ${item.price}</td>
+                <td>
+                  <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
+                  <span style="margin: 0 10px;">${item.qty}</span>
+                  <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
+                </td>
+                <td>Rs. ${item.price * item.qty}</td>
+                <td>
+                  <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; color: var(--color-error); border-color: var(--color-error);" onclick="removeItem(${index})"><i class="fas fa-trash"></i></button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="cart-summary">
+          <div class="summary-row summary-total">
+            <span>Total:</span>
+            <span>Rs. ${total}</span>
+          </div>
+          <button class="btn btn-primary" style="width: 100%;" onclick="proceedToCheckout()">Proceed to Checkout</button>
+        </div>
+      `;
+    };
+
+    const updateQty = (index, change) => {
+      if (cart[index].qty + change > 0) {
+        cart[index].qty += change;
+        localStorage.setItem('cartItems', JSON.stringify(cart));
+        updateCartCount();
+        renderCart();
+      }
+    };
+
+    const removeItem = (index) => {
+      cart.splice(index, 1);
+      localStorage.setItem('cartItems', JSON.stringify(cart));
+      updateCartCount();
+      renderCart();
+    };
+
+    const proceedToCheckout = () => {
+      const userInfo = getUserInfo();
+      if (!userInfo) {
+        window.location.href = '/login.html?redirect=checkout';
+      } else {
+        window.location.href = '/checkout.html';
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', renderCart);
+  </script>
+</body>
+</html>

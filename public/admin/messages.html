@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Messages | SM Fashion Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .chat-layout { display: flex; height: calc(100vh - 150px); background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-top: 1rem; }
+    .chat-sidebar { width: 300px; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
+    .chat-list { flex: 1; overflow-y: auto; }
+    .chat-item { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: 0.3s; }
+    .chat-item:hover, .chat-item.active { background: #f9f9f9; }
+    .chat-item h4 { margin: 0 0 5px 0; font-size: 1rem; color: #333; }
+    .chat-item p { margin: 0; font-size: 0.85rem; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-main { flex: 1; display: flex; flex-direction: column; background: #e5ddd5; }
+    .chat-header { padding: 15px; background: #075e54; color: white; font-weight: bold; font-size: 1.1rem; }
+    .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .msg { max-width: 70%; padding: 10px 15px; border-radius: 8px; font-size: 0.95rem; position: relative; }
+    .msg-user { background: #fff; align-self: flex-start; border-bottom-left-radius: 0; }
+    .msg-admin { background: #dcf8c6; align-self: flex-end; border-bottom-right-radius: 0; }
+    .chat-input { padding: 15px; background: #f0f0f0; display: flex; gap: 10px; }
+    .chat-input input { flex: 1; padding: 12px 20px; border: none; border-radius: 25px; outline: none; font-size: 1rem; }
+    .chat-input button { background: #075e54; color: white; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <a href="/" class="brand">SM FASHION</a>
+      <nav class="admin-nav">
+        <a href="/admin/dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="/admin/products.html"><i class="fas fa-box"></i> Products</a>
+        <a href="/admin/orders.html"><i class="fas fa-shopping-cart"></i> Orders</a>
+        <a href="/admin/messages.html" class="active"><i class="fas fa-comments"></i> Messages</a>
+        <a href="#" onclick="logout(event)" style="margin-top: 2rem;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </nav>
+    </aside>
+    <main class="admin-content">
+      <div class="admin-header">
+        <h2>Customer Support Chat</h2>
+      </div>
+      <div class="chat-layout">
+        <div class="chat-sidebar" id="chatList">
+          <div style="padding: 20px; text-align: center; color: #777;">Loading conversations...</div>
+        </div>
+        <div class="chat-main" id="chatMain" style="display: none;">
+          <div class="chat-header" id="chatHeader">Customer Name</div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input">
+            <input type="text" id="replyInput" placeholder="Type a reply..." onkeypress="if(event.key==='Enter') sendReply()">
+            <button onclick="sendReply()"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
+        <div class="chat-main" id="noChatSelected" style="justify-content: center; align-items: center; background: #f9f9f9; color: #999; font-size: 1.2rem; display: flex;">
+          Select a conversation to start messaging
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="/js/main.js"></script>
+  <script>
+    let threads = {}; 
+    let activeThreadId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const userInfo = getUserInfo();
+      if (!userInfo || !userInfo.isAdmin) return window.location.href = '/login.html';
+      fetchMessages();
+      setInterval(fetchMessages, 10000); // poll every 10s
+    });
+
+    async function fetchMessages() {
+      try {
+        const res = await fetch('/api/messages/admin');
+        const msgs = await res.json();
+        
+        threads = {};
+        msgs.forEach(m => {
+          const id = m.userId || m.guestId;
+          if(!threads[id]) threads[id] = { id, userId: m.userId, guestId: m.guestId, name: m.userName, messages: [] };
+          threads[id].messages.push(m);
+        });
+        
+        renderSidebar();
+        if(activeThreadId) renderChat(activeThreadId);
+      } catch(e) { console.error(e); }
+    }
+
+    function renderSidebar() {
+      const list = document.getElementById('chatList');
+      const threadVals = Object.values(threads).sort((a,b) => {
+        const lastA = new Date(a.messages[a.messages.length-1].createdAt).getTime();
+        const lastB = new Date(b.messages[b.messages.length-1].createdAt).getTime();
+        return lastB - lastA;
+      });
+      
+      if(threadVals.length === 0) {
+        list.innerHTML = '<div style="padding: 20px; text-align: center; color: #777;">No conversations yet</div>';
+        return;
+      }
+      
+      list.innerHTML = threadVals.map(t => {
+        const lastMsg = t.messages[t.messages.length-1];
+        return `
+          <div class="chat-item ${activeThreadId === t.id ? 'active' : ''}" onclick="openChat('${t.id}')">
+            <h4>${t.name}</h4>
+            <p>${lastMsg.isAdminReply ? 'You: ' : ''}${lastMsg.text}</p>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openChat(id) {
+      activeThreadId = id;
+      document.getElementById('noChatSelected').style.display = 'none';
+      document.getElementById('chatMain').style.display = 'flex';
+      renderSidebar();
+      renderChat(id);
+    }
+
+    function renderChat(id) {
+      const t = threads[id];
+      if(!t) return;
+      document.getElementById('chatHeader').innerText = t.name;
+      const box = document.getElementById('chatMessages');
+      box.innerHTML = t.messages.map(m => `
+        <div class="msg ${m.isAdminReply ? 'msg-admin' : 'msg-user'}">${m.text}</div>
+      `).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendReply() {
+      if(!activeThreadId) return;
+      const input = document.getElementById('replyInput');
+      const text = input.value.trim();
+      if(!text) return;
+      input.value = '';
+      
+      const t = threads[activeThreadId];
+      const payload = { userId: t.userId, guestId: t.guestId, text };
+      
+      // optimistically add
+      document.getElementById('chatMessages').innerHTML += `<div class="msg msg-admin">${text}</div>`;
+      document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+      
+      try {
+        await fetch('/api/messages/admin', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        fetchMessages();
+      } catch(e) { console.error(e); }
+    }
+  </script>
+</body>
+</html>
