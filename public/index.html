@@ -255,41 +255,73 @@
     </div>
   </footer>
 
-  <script src="/js/main.js"></script>
   <script>
-    // Fetch products by tag
-    async function loadTaggedProducts(tag, containerId) {
-      try {
-        const res = await fetch(`/api/products?${tag}=true`);
-        const products = await res.json();
-        const container = document.getElementById(containerId);
-        
-        if (products.length === 0) {
-          container.innerHTML = `<p style="text-align:center; grid-column: 1 / -1;">No ${tag} products found.</p>`;
-          return;
-        }
+async function loadTaggedProducts(tag, containerId) {
+  const container = document.getElementById(containerId);
 
-        container.innerHTML = products.slice(0, 4).map(p => `
-          <div class="product-card" style="position:relative;">
-            ${p.stock === 0 ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(255,0,0,0.8); color:white; padding:10px 20px; font-weight:bold; border-radius:4px; z-index:10;">Out of Stock</div>' : ''}
-            <img src="${p.image}" alt="${p.name}" class="product-image" ${p.stock === 0 ? 'style="opacity:0.6"' : ''}>
-            <div class="product-info">
-              <div class="product-category">${p.category}</div>
-              <h3 class="product-title">${p.name}</h3>
-              <div class="product-price">Rs. ${p.price}</div>
-              <button class="btn btn-outline" ${p.stock === 0 ? 'disabled style="cursor:not-allowed"' : `onclick="addToCart('${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price}, '${p.image}')"`}>${p.stock === 0 ? 'Out of Stock' : 'Add to Cart'}</button>
-            </div>
-          </div>
-        `).join('');
-      } catch(e) {
-        console.error(e);
-      }
+  try {
+    const res = await fetch(`/api/products?${tag}=true`);
+    const data = await res.json();
+
+    console.log("API Response:", data);
+
+    // Check if API returned an array
+    if (!Array.isArray(data)) {
+      container.innerHTML =
+        `<p style="text-align:center;color:red;">
+          Unable to load products.
+        </p>`;
+      return;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      loadTaggedProducts('trending', 'trendingProducts');
-    });
-  </script>
+    if (data.length === 0) {
+      container.innerHTML =
+        `<p style="text-align:center;">
+          No products found.
+        </p>`;
+      return;
+    }
+
+    container.innerHTML = data.slice(0, 4).map(p => `
+      <div class="product-card">
+        <img
+          src="${p.image || '/uploads/logo.png'}"
+          alt="${p.name}"
+          class="product-image"
+        >
+
+        <div class="product-info">
+          <div class="product-category">${p.category || ''}</div>
+
+          <h3 class="product-title">
+            ${p.name || 'Product'}
+          </h3>
+
+          <div class="product-price">
+            Rs. ${p.price || 0}
+          </div>
+
+          <button class="btn btn-outline">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    console.error("Product Loading Error:", err);
+
+    container.innerHTML =
+      `<p style="text-align:center;color:red;">
+        Error loading products.
+      </p>`;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadTaggedProducts("trending", "trendingProducts");
+});
+</script>
 
   <!-- WhatsApp Widget Removed as requested -->
 </body>
