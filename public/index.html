@@ -319,7 +319,7 @@ async function loadTaggedProducts(tag, containerId) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadTaggedProducts("trending", "trendingProducts");
+  fetch('/api/products')
 });
 </script>
 
