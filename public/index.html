@@ -160,9 +160,9 @@
   <header class="hero" style="position: relative; height: 75vh; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center;">
     <!-- Grid Background -->
     <div style="position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr 1fr; z-index: 0;">
-      <div style="background: url('/uploads/cat_saree.png') center/cover no-repeat; height: 100%;"></div>
-      <div style="background: url('/uploads/cat_salwars.png') center/cover no-repeat; height: 100%; border-left: 3px solid #fff; border-right: 3px solid #fff;"></div>
-      <div style="background: url('/uploads/cat_nightwear.png') center/cover no-repeat; height: 100%;"></div>
+      <div style="background: url('js/uploads/cat_saree.png') center/cover no-repeat; height: 100%;"></div>
+      <div style="background: url('js/uploads/cat_salwars.png') center/cover no-repeat; height: 100%; border-left: 3px solid #fff; border-right: 3px solid #fff;"></div>
+      <div style="background: url('js/uploads/cat_nightwear.png') center/cover no-repeat; height: 100%;"></div>
     </div>
     
     <!-- Dark overlay for text readability -->
@@ -285,7 +285,7 @@ async function loadTaggedProducts(tag, containerId) {
     container.innerHTML = data.slice(0, 4).map(p => `
       <div class="product-card">
         <img
-          src="${p.image || '/uploads/logo.png'}"
+          src="${p.image || 'js/uploads/logo.png'}"
           alt="${p.name}"
           class="product-image"
         >
